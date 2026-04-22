@@ -1,0 +1,27 @@
+[package]
+name = "messaging-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yew = { version = "0.21", features = ["csr"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["HtmlInputElement", "HtmlSelectElement"] }
+gloo-net = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rsa = { version = "0.9", features = ["sha2", "pem"] }
+sha2 = "0.10"
+sha1 = "0.10"
+hmac = "0.12"
+aes = "0.8"
+cbc = "0.1"
+rand = "0.8"
+pem = "3.0"
+getrandom = { version = "0.2", features = ["js"] }
+base64 = "0.21"
+log = "0.4"
+wasm-logger = "0.2"
+subtle = "2.5"
+pkcs1 = { version = "0.7", features = ["pem"] }

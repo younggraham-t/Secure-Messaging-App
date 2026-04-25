@@ -2,26 +2,24 @@ const fs = require("fs");
 const path = require("path");
 const { generateKeyPair } = require("./security/crypto/rsa");
 
-const dir = path.join(__dirname, "security", "keys");
+// Resolves to the absolute path of the root /keys directory
+const keysPath = path.resolve(__dirname, "../keys");
 
 // Create folder if not exists
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
+if (!fs.existsSync(keysPath)) {
+  fs.mkdirSync(keysPath, { recursive: true });
 }
 
-const { publicKey, privateKey } = generateKeyPair();
+const bob = generateKeyPair();
+fs.writeFileSync(path.join(keysPath, "bob_public.pem"), bob.publicKey);
+fs.writeFileSync(path.join(keysPath, "bob_private.pem"), bob.privateKey);
 
-fs.writeFileSync(path.join(dir, "bob_public.pem"), publicKey);
-fs.writeFileSync(path.join(dir, "bob_private.pem"), privateKey);
+const alice = generateKeyPair();
+fs.writeFileSync(path.join(keysPath, "alice_public.pem"), alice.publicKey);
+fs.writeFileSync(path.join(keysPath, "alice_private.pem"), alice.privateKey);
 
-const { alicePublicKey, alicePrivateKey } = generateKeyPair();
+const mallory = generateKeyPair();
+fs.writeFileSync(path.join(keysPath, "mallory_public.pem"), mallory.publicKey);
+fs.writeFileSync(path.join(keysPath, "mallory_private.pem"), mallory.privateKey);
 
-fs.writeFileSync(path.join(dir, "alice_public.pem"), alicePublicKey);
-fs.writeFileSync(path.join(dir, "alice_private.pem"),alicePrivateKey);
-
-const { malloryPublicKey, malloryPrivateKey } = generateKeyPair();
-
-fs.writeFileSync(path.join(dir, "mallory_public.pem"), malloryPublicKey);
-fs.writeFileSync(path.join(dir, "mallory_private.pem"),malloryPrivateKey);
-
-console.log("Keys generated in security/keys/");
+console.log(`\nSuccess: Keys generated/updated in: ${keysPath}\n`);

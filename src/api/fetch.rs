@@ -1,9 +1,11 @@
 use gloo_net::http::Request;
 use serde::Deserialize;
 
+use crate::crypto::session::MessagePayload;
+
 #[derive(Deserialize)]
-pub struct PublicKeyResponse {
-    pub key: String
+pub struct Response {
+    pub data: String
 }
 
 pub async fn fetch_public_key(user: &str, endpoint: &str) -> Result<String, String> {
@@ -18,11 +20,37 @@ pub async fn fetch_public_key(user: &str, endpoint: &str) -> Result<String, Stri
         return Err(format!("Server returned status: {}", res.status()));
     }
 
-    let data: PublicKeyResponse = res
+    let data: Response = res
         .json()
         .await
         .map_err(|e| format!("Failed to parse response: {}", e))?;
 
     // Return the raw PEM string directly
-    Ok(data.key)
+    Ok(data.data)
 }
+
+pub async fn post_message(payload: MessagePayload) -> Result<String, String> {
+    
+    let url = "/api/message".to_string();
+    let res = Request::post(&url)
+        .json(&payload)
+        .expect("Failed to serialize payload")
+        .send()
+        .await
+        .map_err(|e| format!("Network error: {}", e))?;
+    if !res.ok() {
+        return Err(format!("Server returned status: {}", res.status()));
+    }
+    
+    let data: Response = res
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse response: {}", e))?;
+
+    Ok(data.data)
+        
+}
+
+// pub fn get_messages(user: &str) {
+//
+// }

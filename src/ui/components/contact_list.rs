@@ -4,7 +4,7 @@ use crate::ui::user_context::UserContextValue;
 #[function_component(ContactList)]
 pub fn contact_list() -> Html {
     let user_context = use_context::<UserContextValue>().expect("UserContext not found");
-    let users = vec!["Alice", "Bob", "Eve", "Mallory"];
+    let users = vec!["Alice", "Bob", "Mallory"];
 
     html! {
         <>

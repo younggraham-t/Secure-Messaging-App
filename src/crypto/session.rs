@@ -10,12 +10,14 @@ pub struct SessionInit {
     pub encrypted_key: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MessagePayload {
     pub iv: String,
     pub ciphertext: String,
     pub hmac: String,
 }
+
+
 
 pub fn initiate_session(public_key_pem: &str) -> SessionInit {
     let mut session_key = [0u8; 32];
@@ -36,7 +38,7 @@ pub fn receive_session(enc_key_base64: &str, private_key_pem: &str) -> Vec<u8> {
     rsa::decrypt_with_private_key(&enc_key_bytes, private_key_pem)
 }
 
-pub fn encrypt_message(message: &str, session_key: &[u8]) -> MessagePayload {
+pub fn encrypt_message(message: &str, session_key: Vec<u8>) -> MessagePayload {
 
     let mut iv_bytes = [0u8; 16];
     //provides good entropy for crypto use
@@ -44,12 +46,14 @@ pub fn encrypt_message(message: &str, session_key: &[u8]) -> MessagePayload {
     //encode iv as base64
     let iv = general_purpose::STANDARD.encode(iv_bytes);
 
+    log::info!("{}", session_key.len());
+    let key: [u8; 32] = session_key.try_into().expect("Session key length mismatch");
     // session_key is the AES key generated in initiate_session
-    let ciphertext = aes_cbc::encrypt_aes(message, session_key, &iv_bytes);
+    let ciphertext = aes_cbc::encrypt_aes(message, &key, &iv_bytes);
 
     //append iv (base64) to ciphertext (base64)
     let hmac_input = format!("{}{}", ciphertext, iv);
-    let hmac = hmac::generate_hmac(hmac_input.as_bytes(), session_key);
+    let hmac = hmac::generate_hmac(hmac_input.as_bytes(), &key);
 
     MessagePayload {
         iv,

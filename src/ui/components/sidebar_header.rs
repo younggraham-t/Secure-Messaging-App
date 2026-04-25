@@ -8,7 +8,7 @@ pub fn sidebar_header() -> Html {
     let user_context = use_context::<UserContextValue>().expect("UserContext not found");
     let secure_context = use_context::<SecureModeContextValue>().expect("SecureModeContext not found");
     
-    let users = vec!["Alice", "Bob", "Eve", "Mallory"];
+    let users = vec!["Alice", "Bob", "Mallory"];
 
     let onchange_user = {
         let set_current_user = user_context.set_current_user.clone();
@@ -46,6 +46,9 @@ pub fn sidebar_header() -> Html {
 
             <div style="font-size: 13px; color: #65676b; margin-bottom: 4px;">{ "Signed in as:" }</div>
             <select onchange={onchange_user} style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; background: #f0f2f5; outline: none; cursor: pointer;">
+                    <option value="" selected={user_context.state.current_user.is_empty()} >
+                    {"Select A User"}
+                    </option>
                 { for users.iter().map(|user| html! {
                     <option value={*user} selected={*user == user_context.state.current_user}>
                         { user }

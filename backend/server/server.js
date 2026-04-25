@@ -4,6 +4,12 @@ const { WebSocketServer } = require('ws');
 const cors = require('cors');
 const CA = require("../security/ca/ca");
 const { receiveSession, initiateSession, encryptMessage, decryptMessage } = require("../security/services/session");
+const chalk = require("chalk");
+
+const magenta = chalk.hex('#FF00FF');
+const green = chalk.hex('#008000');
+const red = chalk.hex('#FF0000');
+const lightGreen = chalk.hex("#39e75f");
 
 const app = express();
 app.use(cors());
@@ -27,7 +33,8 @@ app.get('/ca/public-key/:user', (req, res) => {
 });
 
 app.get('/user/public-key/:user', (req, res) => {
-    console.log(`[MALLORY] Intercepting public key request for ${req.params.user}`);
+    console.log(magenta('[MALLORY]') + red(` Intercepting public key request for ${req.params.user}`));
+    console.log(magenta('[MALLORY]') + red(` Sending own public key`));
     const malloryKey = CA.getPublicKey("mallory");
     res.json({ data: malloryKey });
 });
@@ -45,22 +52,22 @@ wss.on('connection', (ws) => {
             if (type === 'register') {
                 currentUsername = data.username.toLowerCase();
                 connectedUsers.set(currentUsername, ws);
-                console.log(`[SERVER] ${data.username} connected.`);
+                console.log(green('[SERVER]') + ` ${data.username} connected.`);
             }
 
             else if (type === 'session_start') {
                 const { to, encrypted_key } = data;
                 const recipient = to.toLowerCase();
-                console.log(`\n[MALLORY] Handshake intercepted: ${currentUsername} -> ${recipient}`);
+                console.log(magenta('[MALLORY]') + ` Handshake intercepted: ${currentUsername} -> ${recipient}`);
 
                 try {
                     const malloryPrivate = CA.getPrivateKey("mallory");
                     const decryptedSessionKey = receiveSession(encrypted_key, malloryPrivate);
 
-                    console.log(`[MALLORY] ATTACK SUCCESSFUL! Decrypted session key from ${currentUsername}: ${decryptedSessionKey.toString('hex')}`);
+                    console.log(magenta('[MALLORY]') + red(` ATTACK SUCCESSFUL! Decrypted session key from ${currentUsername}: ${decryptedSessionKey.toString('hex')}`));
                     
                     const bobPublicKey = CA.getPublicKey(recipient);
-                    console.log(`[MALLORY] Initiating Session with ${recipient}`);
+                    console.log(magenta('[MALLORY]') + ` Initiating Session with ${recipient}`);
                     const malloryToBob = initiateSession(bobPublicKey);
 
                     interceptedSessions.set(currentUsername, {
@@ -77,7 +84,7 @@ wss.on('connection', (ws) => {
                         }));
                     }
                 } catch (e) {
-                    console.log(`[MALLORY] Handshake is SECURE. Forwarding blindly.`);
+                    console.log(magenta('[MALLORY]') + lightGreen(` Handshake is SECURE. Cannot insert into session.`));
                     const bobWs = connectedUsers.get(recipient);
                     if (bobWs) {
                         bobWs.send(JSON.stringify({
@@ -95,13 +102,13 @@ wss.on('connection', (ws) => {
                 const session = interceptedSessions.get(currentUsername);
 				// console.log(session)
 
-                console.log(`[MALLORY] Trying to decrypt incoming message: "${payload.ciphertext}"`);
+                console.log(magenta('[MALLORY]') + ` Trying to decrypt incoming message: "${payload.ciphertext}"`);
                 if (session) {
                     try {
                         const plaintext = decryptMessage(payload, session.keyAlice);
-                        console.log(`[MALLORY] Decrypt Success, Message: "${plaintext}"`);
+                        console.log(magenta('[MALLORY]') + red(` Decrypt Success, Message: "${plaintext}"`));
 
-						const modifiedPlaintext = plaintext.replace("me $", "Mallory $")
+						const modifiedPlaintext = plaintext.replace("me $", "Mallory ` $")
 						
                         
                         const newPayload = encryptMessage(modifiedPlaintext, session.keyBob);
@@ -114,11 +121,11 @@ wss.on('connection', (ws) => {
                             }));
                         }
                     } catch (e) {
-                        console.log(`[MALLORY] Relay failed: ${e.message}`);
+                        console.log(magenta('[MALLORY]') + ` Relay failed: ${e.message}`);
                     }
                 } else {
-                    console.log(`[MALLORY] No MITM Session. `)
-					console.log(`[Server] Forwarding encrypted blob ${currentUsername} -> ${recipient}`);
+                    console.log(magenta('[MALLORY]') + lightGreen(` Cannot decrypt, no MITM session`))
+					console.log(green('[SERVER]') + ` Forwarding encrypted blob ${currentUsername} -> ${recipient}`);
                     const bobWs = connectedUsers.get(recipient);
                     if (bobWs) {
                         bobWs.send(JSON.stringify({
@@ -136,13 +143,14 @@ wss.on('connection', (ws) => {
 
     ws.on('close', () => {
         if (currentUsername) connectedUsers.delete(currentUsername);
-        console.log(`[SERVER] ${currentUsername} disconnected.`);
+        console.log(green('[SERVER]') + ` ${currentUsername} disconnected.`);
     });
 });
 
 server.listen(port, () => {
     console.log(`\n==============================================`);
-    console.log(`Server RUNNING ON PORT ${port}`);
-    console.log(`[Mallory] Listening to all Conections`);
+    console.log(green('[SERVER]') + ` RUNNING ON PORT ${port}`);
     console.log(`==============================================\n`);
+	
+    console.log(magenta('[MALLORY]') + ` Listening to all Conections`);
 });

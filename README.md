@@ -23,6 +23,10 @@ node run.js
 ```
 This starts the /backend/server/server.js and runs `trunk serve` to start the frontend. After a few seconds it will open 2 browser tabs. 
 
+## Troubleshooting
+Problem: The browser won't show anything.
+Solution: The frontend may not be running. Check the output in the terminal to see
+
 For all cases: Open each browser and choose the "signed in" user (Bob on one and Alice on the other) then choose the recipient as the other person. 
 # Success Case
 When "Sucure Mode" is activated the application will fetch the recipient's public key from the "trusted" CA source. In both cases the system will send a "session start" message to the server with an encrypted session key. In secure mode Mallory will attempt to decrypt the session key and be unsuccessful. Then the server will forward the encrypted key to the recipient. The client will then send a payload encrypted with the session key to the server which will forward it to the other client. At this stage Mallory will again try to decrypt and be unsuccessful.

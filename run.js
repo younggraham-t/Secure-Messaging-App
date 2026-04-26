@@ -8,7 +8,7 @@ console.log("==========================================\n");
 // Start the Frontend (Trunk) first
 const frontend = spawn('trunk', ['serve'], {
     shell: true,
-    stdio: 'ignore'
+    stdio: 'inherit'
 });
 
 let backend;

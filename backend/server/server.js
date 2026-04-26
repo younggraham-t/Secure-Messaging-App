@@ -108,7 +108,7 @@ wss.on('connection', (ws) => {
                         const plaintext = decryptMessage(payload, session.keyAlice);
                         console.log(magenta('[MALLORY]') + red(` Decrypt Success, Message: "${plaintext}"`));
 
-						const modifiedPlaintext = plaintext.replace("me $", "Mallory ` $")
+						const modifiedPlaintext = plaintext.replace("me $", "Mallory $")
 						
                         
                         const newPayload = encryptMessage(modifiedPlaintext, session.keyBob);

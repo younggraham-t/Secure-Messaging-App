@@ -13,7 +13,7 @@ const frontend = spawn('trunk', ['serve'], {
 
 let backend;
 
-// Wait 2 seconds for Trunk to initialize, then start Backend
+// Wait 5 seconds for Trunk to initialize, then start Backend
 setTimeout(() => {
     console.log("\n[STAGING] Starting Mallory Terminal...");
     backend = spawn('node', ['server/server.js'], {
@@ -21,7 +21,7 @@ setTimeout(() => {
         shell: true,
         stdio: 'inherit'
     });
-}, 2000);
+}, 5000);
 
 // Automatically open browsers to the ui
 setTimeout(() => {
